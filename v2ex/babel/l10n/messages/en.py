@@ -11,6 +11,7 @@ backstage = 'Backstage'
 signin = 'Sign In'
 signup = 'Sign Up'
 signout = 'Sign Out'
+flush = 'Flush Cache'
 
 # Messages shared by forms
 

@@ -11,6 +11,7 @@ backstage = '后台'
 signin = '登入'
 signup = '注册'
 signout = '登出'
+flush = '清空缓存'
 
 # Messages shared by forms
 

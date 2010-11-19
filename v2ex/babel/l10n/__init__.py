@@ -10,23 +10,21 @@ import logging
 #
 # Step 3: Fallback to site.l10n
 
+def Getlang(langid):
+    if langid == 'en':
+        from v2ex.babel.l10n.messages import en as messages
+        return messages
+    if langid == 'zh-Hans':
+        from v2ex.babel.l10n.messages import zhHans as messages
+        return messages
+
 def GetMessages(handler, member=False, site=False):
     logging.info(handler.request.headers)
     logging.info(site.l10n)
-    if member is not False:
-        if member.l10n == 'en':
-            from v2ex.babel.l10n.messages import en as messages
-            return messages
-        if member.l10n == 'zh-Hans':
-            from v2ex.babel.l10n.messages import zhHans as messages
-            return messages
+    if member:
+        return Getlang(member.l10n)
     else:
-        if site.l10n == 'en':
-            from v2ex.babel.l10n.messages import en as messages
-            return messages
-        if site.l10n == 'zh-Hans':
-            from v2ex.babel.l10n.messages import zhHans as messages
-            return messages
+        return Getlang(site.l10n)
 
 def GetSupportedLanguages():
     return ['en', 'zh-Hans']

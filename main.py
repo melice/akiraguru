@@ -51,12 +51,9 @@ import config
 class HomeHandler(webapp.RequestHandler):
     def head(self):
         pass
-        
+
     def get(self):
         host = self.request.headers['Host']
-        if host == 'beta.v2ex.com':
-            self.redirect('http://v2ex.appspot.com/')
-            return
         site = GetSite()
         browser = detect(self.request)
         template_values = {}
@@ -209,7 +206,7 @@ class HomeHandler(webapp.RequestHandler):
             path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'index.html')
         output = template.render(path, template_values)
         self.response.out.write(output)
-        
+
 class RecentHandler(webapp.RequestHandler):
     def get(self):
         site = GetSite()
@@ -266,7 +263,7 @@ class UAHandler(webapp.RequestHandler):
         output = template.render(path, template_values)
         self.response.out.write(output)
 
-        
+
 class SigninHandler(webapp.RequestHandler):
     def get(self):
         site = GetSite()
@@ -286,7 +283,7 @@ class SigninHandler(webapp.RequestHandler):
             path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'signin.html')
         output = template.render(path, template_values)
         self.response.out.write(output)
- 
+
     def post(self):
         site = GetSite()
         member = False
@@ -322,7 +319,7 @@ class SigninHandler(webapp.RequestHandler):
             path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'signin.html')
         output = template.render(path, template_values)
         self.response.out.write(output)
-        
+
 class SignupHandler(webapp.RequestHandler):
     def get(self):
         site = GetSite()
@@ -346,7 +343,7 @@ class SignupHandler(webapp.RequestHandler):
             path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'signup.html')
         output = template.render(path, template_values)
         self.response.out.write(output)
-        
+
     def post(self):
         site = GetSite()
         member = False
@@ -434,7 +431,7 @@ class SignupHandler(webapp.RequestHandler):
         challenge = self.request.get('recaptcha_challenge_field')
         response  = self.request.get('recaptcha_response_field')
         remoteip  = os.environ['REMOTE_ADDR']
-        
+
         cResponse = captcha.submit(
                          challenge,
                          response,
@@ -529,7 +526,7 @@ class ForgotHandler(webapp.RequestHandler):
         path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'forgot.html')
         output = template.render(path, template_values)
         self.response.out.write(output)
-    
+
     def post(self):
         site = GetSite()
         browser = detect(self.request)
@@ -609,7 +606,7 @@ class PasswordResetHandler(GenericHandler):
             path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'token_not_found.html')
             output = template.render(path, template_values)
             self.response.out.write(output)
-    
+
     def post(self, token):
         site = GetSite()
         template_values = {}
@@ -673,7 +670,7 @@ class NodeHandler(webapp.RequestHandler):
         if member:
             template_values['member'] = member
         l10n = GetMessages(self, member, site)
-        template_values['l10n'] = l10n    
+        template_values['l10n'] = l10n
         node = GetKindByName('Node', node_name)
         template_values['node'] = node
         pagination = False
@@ -732,7 +729,7 @@ class NodeHandler(webapp.RequestHandler):
                     more = page + 1
                 if page > 1:
                     has_previous = True
-                    previous = page - 1    
+                    previous = page - 1
                 start = (page - 1) * page_size
                 template_values['canonical'] = 'http://' + site.domain + '/go/' + node.name + '?p=' + str(page)
         else:
@@ -836,6 +833,11 @@ class DispatcherHandler(webapp.RequestHandler):
         else:
             self.redirect(referer)
 
+class FlushHandler(webapp.RequestHandler):
+    def get(self):
+        memcache.flush_all()
+        self.redirect('/')
+
 class RouterHandler(webapp.RequestHandler):
     def get(self, path):
         if path.find('/') != -1:
@@ -913,6 +915,7 @@ class RouterHandler(webapp.RequestHandler):
 def main():
     application = webapp.WSGIApplication([
     ('/', HomeHandler),
+    ('/flush', FlushHandler),
     ('/recent', RecentHandler),
     ('/ua', UAHandler),
     ('/signin', SigninHandler),
