@@ -1076,6 +1076,7 @@ class BackstageNewNodeHandler(webapp.RequestHandler):
                     node.name = node_name
                     node.title = node_title
                     node.title_alternative = node_title_alternative
+                    node.category = section_name
                     node.put()
                     counter.put()
                     self.redirect('/backstage/section/' + section.name)
