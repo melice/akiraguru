@@ -185,14 +185,11 @@ class HomeHandler(webapp.RequestHandler):
             if c is None:
                 c = ''
                 i = 0
-                if site.home_categories is not None:
-                    categories = site.home_categories.split("\n")
-                else:
-                    categories = []
-                for category in categories:
-                    category = category.strip()
+                categoriesdb = db.GqlQuery("SELECT * FROM Section")
+                for cate in categoriesdb:
+                    category = cate.name.strip()
                     i = i + 1
-                    if i == len(categories):
+                    if i == categoriesdb.count():
                         css_class = 'inner'
                     else:
                         css_class = 'cell'
