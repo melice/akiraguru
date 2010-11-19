@@ -21,6 +21,11 @@
             {% include 'rightbar/goodies.html' %}
         </div>
         <div id="Content">
+            <div class="box">
+                <div class="cell"><span class="fade"><strong>{{ site.title }}</strong> / {{ l10n.nodes_portal }}</span></div>
+                {{ c }}
+            </div>
+            <div class="sep20"></div>
             <div class="box" id="topics_index">
                 {% if member %}
                 <div class="cell" align="center"><span class="snow">快速发贴 &nbsp;•&nbsp; <a href="/new/qna">提问</a> &nbsp;•&nbsp; <a href="/new/share">分享发现</a> &nbsp;•&nbsp; <a href="/new/random">随想</a> &nbsp;•&nbsp; <a href="/new/babel">Project Babel</a> &nbsp;•&nbsp; <a href="/new/iphone">iPhone</a> &nbsp;•&nbsp; <a href="/new/gae">Google App Engine</a> &nbsp;•&nbsp; <a href="/new/autistic">自言自语</a></span></div>
@@ -51,11 +56,7 @@
         		    <span class="chevron">»</span> <a href="/recent">{{ l10n.more_recent_topics }}</a>
         		</div>
             </div>
-            <div class="sep20"></div>
-            <div class="box">
-                <div class="cell"><span class="fade"><strong>{{ site.title }}</strong> / {{ l10n.nodes_portal }}</span></div>
-                {{ c }}
-            </div>
+
         </div>
     <div class="c"></div>
     </div>

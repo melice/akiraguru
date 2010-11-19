@@ -141,14 +141,14 @@ class NewTopicHandler(webapp.RequestHandler):
             topic_content_error = 0
             topic_content_error_messages = ['',
                 u'请输入主题内容',
-                u'主题内容长度不能超过 2000 个字符'
+                u'主题内容长度不能超过 9999 个字符'
             ]
             topic_content = self.request.get('content').strip()
             if (len(topic_content) == 0):
                 errors = errors + 1
                 topic_content_error = 1
             else:
-                if (len(topic_content) > 2000):
+                if (len(topic_content) > 9999):
                     errors = errors + 1
                     topic_content_error = 2
             template_values['topic_content'] = topic_content
