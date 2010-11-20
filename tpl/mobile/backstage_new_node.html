@@ -11,7 +11,7 @@
 <body>
 	{% include 'common/top.html' %}
     <div id="Main">
-		<div class="section"><a href="/" class="black">{{ site.title }}</a> › <a href="/backstage" class="black">后台</a> › <a href="/backstage/section/{{ section.name }}" class="black">{{ section.title }}</a> › 新建节点</div>
+		<div class="section"><a href="/" class="black">{{ site.title }}</a> › <a href="/backstage" class="black">后台</a> › <a href="/backstage/node/{{ section.name }}" class="black">{{ section.title }}</a> › 新建节点</div>
 		<div class="cell">
 			<form action="/backstage/new/node/{{ section.name }}" method="post">
 			{% if errors %}

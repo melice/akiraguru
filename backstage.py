@@ -18,7 +18,7 @@ from google.appengine.ext.webapp import template
 
 from v2ex.babel import Member
 from v2ex.babel import Counter
-from v2ex.babel import Section
+#from v2ex.babel import Section
 from v2ex.babel import Node
 from v2ex.babel import Site
 from v2ex.babel import Minisite
@@ -78,9 +78,13 @@ class BackstageHomeHandler(webapp.RequestHandler):
         template_values['reply_total'] = reply_total
         if (member):
             if (member.num == 1):
-                q = db.GqlQuery("SELECT * FROM Section ORDER BY nodes DESC")
+#                q = db.GqlQuery("SELECT * FROM Node")
+                q = Node.all()
+                q.filter('category = ','')
                 template_values['sections'] = q
-                q2 = db.GqlQuery("SELECT * FROM Member ORDER BY created DESC LIMIT 5")
+#                q2 = db.GqlQuery("SELECT * FROM Member ORDER BY created DESC LIMIT 5")
+                q2 = Member.all()
+                q2.order('-created').fetch(5)
                 template_values['latest_members'] = q2
                 q3 = db.GqlQuery("SELECT * FROM Minisite ORDER BY created DESC")
                 template_values['minisites'] = q3
@@ -656,304 +660,307 @@ class BackstageRemovePageHandler(webapp.RequestHandler):
         else:
             self.redirect('/signin')
 
-class BackstageNewSectionHandler(webapp.RequestHandler):
-    def get(self):
-        site = GetSite()
-        template_values = {}
-        template_values['site'] = site
-        template_values['system_version'] = SYSTEM_VERSION
-        member = CheckAuth(self)
-        template_values['member'] = member
-        l10n = GetMessages(self, member, site)
-        template_values['l10n'] = l10n
-        if (member):
-            if (member.num == 1):    
-                path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_new_section.html')
-                output = template.render(path, template_values)
-                self.response.out.write(output)
-            else:
-                self.redirect('/')
-        else:
-            self.redirect('/signin')
-    
-    def post(self):
-        site = GetSite()
-        template_values = {}
-        template_values['site'] = site
-        template_values['system_version'] = SYSTEM_VERSION
-        member = CheckAuth(self)
-        template_values['member'] = member
-        l10n = GetMessages(self, member, site)
-        template_values['l10n'] = l10n
-        if (member):
-            if (member.num == 1):
-                errors = 0
-                # Verification: name
-                section_name_error = 0
-                section_name_error_messages = ['',
-                    u'请输入区域名',
-                    u'区域名长度不能超过 32 个字符',
-                    u'区域名只能由 a-Z 0-9 及 - 和 _ 组成',
-                    u'抱歉这个区域名已经存在了']
-                section_name = self.request.get('name').strip().lower()
-                if (len(section_name) == 0):
-                    errors = errors + 1
-                    section_name_error = 1
-                else:
-                    if (len(section_name) > 32):
-                        errors = errors + 1
-                        section_name_error = 2
-                    else:
-                        if (re.search('^[a-zA-Z0-9\-\_]+$', section_name)):
-                            q = db.GqlQuery('SELECT __key__ FROM Section WHERE name = :1', section_name.lower())
-                            if (q.count() > 0):
-                                errors = errors + 1
-                                section_name_error = 4
-                        else:
-                            errors = errors + 1
-                            section_name_error = 3
-                template_values['section_name'] = section_name
-                template_values['section_name_error'] = section_name_error
-                template_values['section_name_error_message'] = section_name_error_messages[section_name_error]
-                # Verification: title
-                section_title_error = 0
-                section_title_error_messages = ['',
-                    u'请输入区域标题',
-                    u'区域标题长度不能超过 32 个字符'
-                ]
-                section_title = self.request.get('title').strip()
-                if (len(section_title) == 0):
-                    errors = errors + 1
-                    section_title_error = 1
-                else:
-                    if (len(section_title) > 32):
-                        errors = errors + 1
-                        section_title_error = 2
-                template_values['section_title'] = section_title
-                template_values['section_title_error'] = section_title_error
-                template_values['section_title_error_message'] = section_title_error_messages[section_title_error]
-                # Verification: title
-                section_title_alternative_error = 0
-                section_title_alternative_error_messages = ['',
-                    u'请输入区域副标题',
-                    u'区域标题长度不能超过 32 个字符'
-                ]
-                section_title_alternative = self.request.get('title_alternative').strip()
-                if (len(section_title_alternative) == 0):
-                    errors = errors + 1
-                    section_title_alternative_error = 1
-                else:
-                    if (len(section_title_alternative) > 32):
-                        errors = errors + 1
-                        section_title_alternative_error = 2
-                template_values['section_title_alternative'] = section_title_alternative
-                template_values['section_title_alternative_error'] = section_title_alternative_error
-                template_values['section_title_alternative_error_message'] = section_title_alternative_error_messages[section_title_alternative_error]
-                template_values['errors'] = errors
-                if (errors == 0):
-                    section = Section()
-                    q = db.GqlQuery('SELECT * FROM Counter WHERE name = :1', 'section.max')
-                    if (q.count() == 1):
-                        counter = q[0]
-                        counter.value = counter.value + 1
-                    else:
-                        counter = Counter()
-                        counter.name = 'section.max'
-                        counter.value = 1
-                    section.num = counter.value
-                    section.name = section_name
-                    section.title = section_title
-                    section.title_alternative = section_title_alternative
-                    section.put()
-                    counter.put()
-                    self.redirect('/backstage')
-                else:    
-                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_new_section.html')
-                    output = template.render(path, template_values)
-                    self.response.out.write(output)
-            else:
-                self.redirect('/')
-        else:
-            self.redirect('/signin')
+#class BackstageNewSectionHandler(webapp.RequestHandler):
+#    def get(self):
+#        site = GetSite()
+#        template_values = {}
+#        template_values['site'] = site
+#        template_values['system_version'] = SYSTEM_VERSION
+#        member = CheckAuth(self)
+#        template_values['member'] = member
+#        l10n = GetMessages(self, member, site)
+#        template_values['l10n'] = l10n
+#        if (member):
+#            if (member.num == 1):
+#                path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_new_section.html')
+#                output = template.render(path, template_values)
+#                self.response.out.write(output)
+#            else:
+#                self.redirect('/')
+#        else:
+#            self.redirect('/signin')
+#
+#    def post(self):
+#        site = GetSite()
+#        template_values = {}
+#        template_values['site'] = site
+#        template_values['system_version'] = SYSTEM_VERSION
+#        member = CheckAuth(self)
+#        template_values['member'] = member
+#        l10n = GetMessages(self, member, site)
+#        template_values['l10n'] = l10n
+#        if (member):
+#            if (member.num == 1):
+#                errors = 0
+#                Verification: name
+#                section_name_error = 0
+#                section_name_error_messages = ['',
+#                    u'请输入区域名',
+#                    u'区域名长度不能超过 32 个字符',
+#                    u'区域名只能由 a-Z 0-9 及 - 和 _ 组成',
+#                    u'抱歉这个区域名已经存在了']
+#                section_name = self.request.get('name').strip().lower()
+#                if (len(section_name) == 0):
+#                    errors = errors + 1
+#                    section_name_error = 1
+#                else:
+#                    if (len(section_name) > 32):
+#                        errors = errors + 1
+#                        section_name_error = 2
+#                    else:
+#                        if (re.search('^[a-zA-Z0-9\-\_]+$', section_name)):
+#                            q = db.GqlQuery('SELECT __key__ FROM Section WHERE name = :1', section_name.lower())
+#                            if (q.count() > 0):
+#                                errors = errors + 1
+#                                section_name_error = 4
+#                        else:
+#                            errors = errors + 1
+#                            section_name_error = 3
+#                template_values['section_name'] = section_name
+#                template_values['section_name_error'] = section_name_error
+#                template_values['section_name_error_message'] = section_name_error_messages[section_name_error]
+#                Verification: title
+#                section_title_error = 0
+#                section_title_error_messages = ['',
+#                    u'请输入区域标题',
+#                    u'区域标题长度不能超过 32 个字符'
+#                ]
+#                section_title = self.request.get('title').strip()
+#                if (len(section_title) == 0):
+#                    errors = errors + 1
+#                    section_title_error = 1
+#                else:
+#                    if (len(section_title) > 32):
+#                        errors = errors + 1
+#                        section_title_error = 2
+#                template_values['section_title'] = section_title
+#                template_values['section_title_error'] = section_title_error
+#                template_values['section_title_error_message'] = section_title_error_messages[section_title_error]
+#                Verification: title
+#                section_title_alternative_error = 0
+#                section_title_alternative_error_messages = ['',
+#                    u'请输入区域副标题',
+#                    u'区域标题长度不能超过 32 个字符'
+#                ]
+#                section_title_alternative = self.request.get('title_alternative').strip()
+#                if (len(section_title_alternative) == 0):
+#                    errors = errors + 1
+#                    section_title_alternative_error = 1
+#                else:
+#                    if (len(section_title_alternative) > 32):
+#                        errors = errors + 1
+#                        section_title_alternative_error = 2
+#                template_values['section_title_alternative'] = section_title_alternative
+#                template_values['section_title_alternative_error'] = section_title_alternative_error
+#                template_values['section_title_alternative_error_message'] = section_title_alternative_error_messages[section_title_alternative_error]
+#                template_values['errors'] = errors
+#                if (errors == 0):
+#                    section = Section()
+#                    q = db.GqlQuery('SELECT * FROM Counter WHERE name = :1', 'section.max')
+#                    if (q.count() == 1):
+#                        counter = q[0]
+#                        counter.value = counter.value + 1
+#                    else:
+#                        counter = Counter()
+#                        counter.name = 'section.max'
+#                        counter.value = 1
+#                    section.num = counter.value
+#                    section.name = section_name
+#                    section.title = section_title
+#                    section.title_alternative = section_title_alternative
+#                    section.put()
+#                    counter.put()
+#                    self.redirect('/backstage')
+#                else:
+#                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_new_section.html')
+#                    output = template.render(path, template_values)
+#                    self.response.out.write(output)
+#            else:
+#                self.redirect('/')
+#        else:
+#            self.redirect('/signin')
+#
 
-class BackstageSectionHandler(webapp.RequestHandler):
-    def get(self, section_name):
-        site = GetSite()
-        browser = detect(self.request)
-        template_values = {}
-        template_values['rnd'] = random.randrange(1, 100)
-        template_values['site'] = site
-        template_values['system_version'] = SYSTEM_VERSION
-        member = CheckAuth(self)
-        l10n = GetMessages(self, member, site)
-        template_values['l10n'] = l10n
-        if (member):
-            if (member.num == 1):
-                template_values['member'] = member
-                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
-                section = False
-                if (q.count() == 1):
-                    section = q[0]
-                    template_values['section'] = section
-                    template_values['page_title'] = site.title + u' › 后台 › ' + section.title
-                    template_values['section_name'] = section.name
-                    template_values['section_title'] = section.title
-                    template_values['section_title_alternative'] = section.title_alternative
-                    if section.header:
-                        template_values['section_header'] = section.header
-                    else:
-                        template_values['section_header'] = ''
-                    if section.footer:
-                        template_values['section_footer'] = section.footer
-                    else:
-                        template_values['section_footer'] = ''
-                else:
-                    template_values['section'] = section
-                if (section):
-                    q = db.GqlQuery("SELECT * FROM Node WHERE section_num = :1 ORDER BY topics DESC", section.num)
-                    template_values['nodes'] = q
-                    section.nodes = q.count()
-                    section.put()
-                    template_values['section'] = section
-                else:
-                    template_values['nodes'] = False
-                if browser['ios']:
-                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_section.html')
-                else:
-                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_section.html')
-                output = template.render(path, template_values)
-                self.response.out.write(output)
-            else:
-                self.redirect('/')
-        else:
-            self.redirect('/signin')
-    
-    def post(self, section_name):
-        site = GetSite()
-        browser = detect(self.request)
-        template_values = {}
-        template_values['rnd'] = random.randrange(1, 100)
-        template_values['site'] = site
-        template_values['system_version'] = SYSTEM_VERSION
-        member = CheckAuth(self)
-        l10n = GetMessages(self, member, site)
-        template_values['l10n'] = l10n
-        if member:
-            if member.num == 1:
-                template_values['member'] = member
-                section = GetKindByName('Section', section_name)
-                if section is not False:
-                    template_values['section'] = section
-                    errors = 0
-                    # Verification: name
-                    section_name_error = 0
-                    section_name_error_messages = ['',
-                        u'请输入区域名',
-                        u'区域名长度不能超过 32 个字符',
-                        u'区域名只能由 a-Z 0-9 及 - 和 _ 组成',
-                        u'抱歉这个区域名已经存在了']
-                    section_name = self.request.get('name').strip().lower()
-                    if (len(section_name) == 0):
-                        errors = errors + 1
-                        section_name_error = 1
-                    else:
-                        if (len(section_name) > 32):
-                            errors = errors + 1
-                            section_name_error = 2
-                        else:
-                            if (re.search('^[a-zA-Z0-9\-\_]+$', section_name)):
-                                q = db.GqlQuery('SELECT * FROM Section WHERE name = :1', section_name.lower())
-                                if (q.count() > 0):
-                                    for possible_conflict in q:
-                                        if possible_conflict.num != section.num:
-                                            errors = errors + 1
-                                            section_name_error = 4
-                            else:
-                                errors = errors + 1
-                                section_name_error = 3
-                    template_values['section_name'] = section_name
-                    template_values['section_name_error'] = section_name_error
-                    template_values['section_name_error_message'] = section_name_error_messages[section_name_error]
-                    # Verification: title
-                    section_title_error = 0
-                    section_title_error_messages = ['',
-                        u'请输入区域标题',
-                        u'区域标题长度不能超过 32 个字符'
-                    ]
-                    section_title = self.request.get('title').strip()
-                    if (len(section_title) == 0):
-                        errors = errors + 1
-                        section_title_error = 1
-                    else:
-                        if (len(section_title) > 32):
-                            errors = errors + 1
-                            section_title_error = 2
-                    template_values['section_title'] = section_title
-                    template_values['section_title_error'] = section_title_error
-                    template_values['section_title_error_message'] = section_title_error_messages[section_title_error]
-                    # Verification: title_alternative
-                    section_title_alternative_error = 0
-                    section_title_alternative_error_messages = ['',
-                        u'请输入区域副标题',
-                        u'区域标题长度不能超过 32 个字符'
-                    ]
-                    section_title_alternative = self.request.get('title_alternative').strip()
-                    if (len(section_title_alternative) == 0):
-                        errors = errors + 1
-                        section_title_alternative_error = 1
-                    else:
-                        if (len(section_title_alternative) > 32):
-                            errors = errors + 1
-                            section_title_alternative_error = 2
-                    template_values['section_title_alternative'] = section_title_alternative
-                    template_values['section_title_alternative_error'] = section_title_alternative_error
-                    template_values['section_title_alternative_error_message'] = section_title_alternative_error_messages[section_title_alternative_error]
-                    # Verification: header
-                    section_header_error = 0
-                    section_header_error_messages = ['',
-                        u'区域头部信息不能超过 1000 个字符'
-                    ]
-                    section_header = self.request.get('header').strip()
-                    if len(section_header) > 1000:
-                        errors = errors + 1
-                        section_header_error = 1
-                    template_values['section_header'] = section_header
-                    template_values['section_header_error'] = section_header_error
-                    template_values['section_header_error_message'] = section_header_error_messages[section_header_error]
-                    # Verification: footer
-                    section_footer_error = 0
-                    section_footer_error_messages = ['',
-                        u'区域尾部信息不能超过 1000 个字符'
-                    ]
-                    section_footer = self.request.get('footer').strip()
-                    if len(section_footer) > 1000:
-                        errors = errors + 1
-                        section_footer_error = 1
-                    template_values['section_footer'] = section_footer
-                    template_values['section_footer_error'] = section_footer_error
-                    template_values['section_footer_error_message'] = section_footer_error_messages[section_footer_error]
-                    template_values['errors'] = errors
-                    if (errors == 0):
-                        memcache.delete('Section::' + section.name)
-                        section.name = section_name
-                        section.title = section_title
-                        section.title_alternative = section_title_alternative
-                        section.header = section_header
-                        section.footer = section_footer
-                        section.put()
-                        memcache.delete('Section_' + str(section.num))
-                        memcache.delete('Section::' + section_name)
-                        self.redirect('/backstage')
-                    else:
-                        path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_section.html')
-                        output = template.render(path, template_values)
-                        self.response.out.write(output)
-                else:
-                    self.redirect('/backstage')
-            else:
-                self.redirect('/')
-        else:
-            self.redirect('/signin')
+#class BackstageSectionHandler(webapp.RequestHandler):
+#    def get(self, section_name):
+#        site = GetSite()
+#        browser = detect(self.request)
+#        template_values = {}
+#        template_values['rnd'] = random.randrange(1, 100)
+#        template_values['site'] = site
+#        template_values['system_version'] = SYSTEM_VERSION
+#        member = CheckAuth(self)
+#        l10n = GetMessages(self, member, site)
+#        template_values['l10n'] = l10n
+#        if (member):
+#            if (member.num == 1):
+#                template_values['member'] = member
+#                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
+#                q = Node.all().filter('name =',section_name)
+#                section = False
+#                if (q.count() == 1):
+#                    section = q[0]
+#                    template_values['section'] = section
+#                    template_values['page_title'] = site.title + u' › 后台 › ' + section.title
+#                    template_values['section_name'] = section.name
+#                    template_values['section_title'] = section.title
+#                    template_values['section_title_alternative'] = section.title_alternative
+#                    if section.header:
+#                        template_values['section_header'] = section.header
+#                    else:
+#                        template_values['section_header'] = ''
+#                    if section.footer:
+#                        template_values['section_footer'] = section.footer
+#                    else:
+#                        template_values['section_footer'] = ''
+#                else:
+#                    template_values['section'] = section
+#                if (section):
+#                    q = db.GqlQuery("SELECT * FROM Node WHERE section_num = :1 ORDER BY topics DESC", section.num)
+#                    q = Node.all().filter('category =',section_name)
+#                    template_values['nodes'] = q
+#                    section.nodes = q.count()
+#                    section.put()
+#                    template_values['section'] = section
+#                else:
+#                    template_values['nodes'] = False
+#                if browser['ios']:
+#                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_section.html')
+#                else:
+#                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_section.html')
+#                output = template.render(path, template_values)
+#                self.response.out.write(output)
+#            else:
+#                self.redirect('/')
+#        else:
+#            self.redirect('/signin')
+#
+#    def post(self, section_name):
+#        site = GetSite()
+#        browser = detect(self.request)
+#        template_values = {}
+#        template_values['rnd'] = random.randrange(1, 100)
+#        template_values['site'] = site
+#        template_values['system_version'] = SYSTEM_VERSION
+#        member = CheckAuth(self)
+#        l10n = GetMessages(self, member, site)
+#        template_values['l10n'] = l10n
+#        if member:
+#            if member.num == 1:
+#                template_values['member'] = member
+#                section = GetKindByName('Section', section_name)
+#                if section is not False:
+#                    template_values['section'] = section
+#                    errors = 0
+#                    Verification: name
+#                    section_name_error = 0
+#                    section_name_error_messages = ['',
+#                        u'请输入区域名',
+#                        u'区域名长度不能超过 32 个字符',
+#                        u'区域名只能由 a-Z 0-9 及 - 和 _ 组成',
+#                        u'抱歉这个区域名已经存在了']
+#                    section_name = self.request.get('name').strip().lower()
+#                    if (len(section_name) == 0):
+#                        errors = errors + 1
+#                        section_name_error = 1
+#                    else:
+#                        if (len(section_name) > 32):
+#                            errors = errors + 1
+#                            section_name_error = 2
+#                        else:
+#                            if (re.search('^[a-zA-Z0-9\-\_]+$', section_name)):
+#                                q = db.GqlQuery('SELECT * FROM Section WHERE name = :1', section_name.lower())
+#                                if (q.count() > 0):
+#                                    for possible_conflict in q:
+#                                        if possible_conflict.num != section.num:
+#                                            errors = errors + 1
+#                                            section_name_error = 4
+#                            else:
+#                                errors = errors + 1
+#                                section_name_error = 3
+#                    template_values['section_name'] = section_name
+#                    template_values['section_name_error'] = section_name_error
+#                    template_values['section_name_error_message'] = section_name_error_messages[section_name_error]
+#                    Verification: title
+#                    section_title_error = 0
+#                    section_title_error_messages = ['',
+#                        u'请输入区域标题',
+#                        u'区域标题长度不能超过 32 个字符'
+#                    ]
+#                    section_title = self.request.get('title').strip()
+#                    if (len(section_title) == 0):
+#                        errors = errors + 1
+#                        section_title_error = 1
+#                    else:
+#                        if (len(section_title) > 32):
+#                            errors = errors + 1
+#                            section_title_error = 2
+#                    template_values['section_title'] = section_title
+#                    template_values['section_title_error'] = section_title_error
+#                    template_values['section_title_error_message'] = section_title_error_messages[section_title_error]
+#                    Verification: title_alternative
+#                    section_title_alternative_error = 0
+#                    section_title_alternative_error_messages = ['',
+#                        u'请输入区域副标题',
+#                        u'区域标题长度不能超过 32 个字符'
+#                    ]
+#                    section_title_alternative = self.request.get('title_alternative').strip()
+#                    if (len(section_title_alternative) == 0):
+#                        errors = errors + 1
+#                        section_title_alternative_error = 1
+#                    else:
+#                        if (len(section_title_alternative) > 32):
+#                            errors = errors + 1
+#                            section_title_alternative_error = 2
+#                    template_values['section_title_alternative'] = section_title_alternative
+#                    template_values['section_title_alternative_error'] = section_title_alternative_error
+#                    template_values['section_title_alternative_error_message'] = section_title_alternative_error_messages[section_title_alternative_error]
+#                    Verification: header
+#                    section_header_error = 0
+#                    section_header_error_messages = ['',
+#                        u'区域头部信息不能超过 1000 个字符'
+#                    ]
+#                    section_header = self.request.get('header').strip()
+#                    if len(section_header) > 1000:
+#                        errors = errors + 1
+#                        section_header_error = 1
+#                    template_values['section_header'] = section_header
+#                    template_values['section_header_error'] = section_header_error
+#                    template_values['section_header_error_message'] = section_header_error_messages[section_header_error]
+#                    Verification: footer
+#                    section_footer_error = 0
+#                    section_footer_error_messages = ['',
+#                        u'区域尾部信息不能超过 1000 个字符'
+#                    ]
+#                    section_footer = self.request.get('footer').strip()
+#                    if len(section_footer) > 1000:
+#                        errors = errors + 1
+#                        section_footer_error = 1
+#                    template_values['section_footer'] = section_footer
+#                    template_values['section_footer_error'] = section_footer_error
+#                    template_values['section_footer_error_message'] = section_footer_error_messages[section_footer_error]
+#                    template_values['errors'] = errors
+#                    if (errors == 0):
+#                        memcache.delete('Section::' + section.name)
+#                        section.name = section_name
+#                        section.title = section_title
+#                        section.title_alternative = section_title_alternative
+#                        section.header = section_header
+#                        section.footer = section_footer
+#                        section.put()
+#                        memcache.delete('Section_' + str(section.num))
+#                        memcache.delete('Section::' + section_name)
+#                        self.redirect('/backstage')
+#                    else:
+#                        path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_section.html')
+#                        output = template.render(path, template_values)
+#                        self.response.out.write(output)
+#                else:
+#                    self.redirect('/backstage')
+#            else:
+#                self.redirect('/')
+#        else:
+#            self.redirect('/signin')
 
 class BackstageNewNodeHandler(webapp.RequestHandler):
     def get(self, section_name):
@@ -967,7 +974,8 @@ class BackstageNewNodeHandler(webapp.RequestHandler):
         if (member):
             if (member.num == 1):
                 template_values['member'] = CheckAuth(self)
-                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
+#                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
+                q = Node.all().filter('name =',section_name)
                 if (q.count() == 1):
                     template_values['section'] = q[0]
                 else:
@@ -992,7 +1000,8 @@ class BackstageNewNodeHandler(webapp.RequestHandler):
             if (member.num == 1):        
                 template_values['member'] = member
                 section = False
-                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
+#                q = db.GqlQuery("SELECT * FROM Section WHERE name = :1", section_name)
+                q = Node.all().filter('name =',section_name)
                 if (q.count() == 1):
                     section = q[0]
                     template_values['section'] = section
@@ -1072,14 +1081,17 @@ class BackstageNewNodeHandler(webapp.RequestHandler):
                         counter.name = 'node.max'
                         counter.value = 1
                     node.num = counter.value
-                    node.section_num = section.num
+#                    node.section_num = section.num
                     node.name = node_name
                     node.title = node_title
                     node.title_alternative = node_title_alternative
-                    node.category = section_name
+                    if section_name:
+                        node.category = section_name
+                    else:
+                        node.category = ''
                     node.put()
                     counter.put()
-                    self.redirect('/backstage/section/' + section.name)
+                    self.redirect('/backstage/node/' + section_name)
                 else:    
                     path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_new_node.html')
                     output = template.render(path, template_values)
@@ -1103,7 +1115,8 @@ class BackstageNodeHandler(webapp.RequestHandler):
         if (member):
             if (member.num == 1):
                 template_values['member'] = member
-                q = db.GqlQuery("SELECT * FROM Node WHERE name = :1", node_name)
+#                q = db.GqlQuery("SELECT * FROM Node WHERE name = :1", node_name)
+                q = Node.all().filter('name =',node_name)
                 if (q.count() == 1):
                     template_values['node'] = q[0]
                     template_values['node_name'] = q[0].name
@@ -1126,19 +1139,25 @@ class BackstageNodeHandler(webapp.RequestHandler):
                     else:
                         template_values['node_sidebar'] = q[0].sidebar
                     template_values['node_topics'] = q[0].topics
+
+#                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", q[0].section_num)
+                    q2 = Node.all().filter('name =',q[0].category)
+                    if (q2.count() == 1):
+                        template_values['section'] = q2[0]
+                    else:
+                        template_values['section'] = False
+
+                    q = Node.all().filter('category =',q[0].name)
+                    template_values['nodes'] = q
+
+                    if browser['ios']:
+                        path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_node.html')
+                    else:
+                        path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_node.html')
+                    output = template.render(path, template_values)
+                    self.response.out.write(output)
                 else:
-                    template_values['node'] = False
-                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", q[0].section_num)
-                if (q2.count() == 1):
-                    template_values['section'] = q2[0]
-                else:
-                    template_values['section'] = False
-                if browser['ios']:
-                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'mobile', 'backstage_node.html')
-                else:
-                    path = os.path.join(os.path.dirname(__file__), 'tpl', 'desktop', 'backstage_node.html')
-                output = template.render(path, template_values)
-                self.response.out.write(output)
+                    self.redirect('/backstage')
             else:
                 self.redirect('/')
         else:
@@ -1157,7 +1176,8 @@ class BackstageNodeHandler(webapp.RequestHandler):
             if (member.num == 1):        
                 template_values['member'] = member
                 node = False
-                q = db.GqlQuery("SELECT * FROM Node WHERE name = :1", node_name)
+#                q = db.GqlQuery("SELECT * FROM Node WHERE name = :1", node_name)
+                q = Node.all().filter('name =',node_name)
                 if (q.count() == 1):
                     node = q[0]
                     template_values['node'] = q[0]
@@ -1184,7 +1204,8 @@ class BackstageNodeHandler(webapp.RequestHandler):
                 else:
                     template_values['node'] = False
                 section = False
-                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", q[0].section_num)
+#                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", q[0].section_num)
+                q = Node.all().filter('name =',q[0].category)
                 if (q2.count() == 1):
                     template_values['section'] = q2[0]
                 else:
@@ -1680,8 +1701,8 @@ def main():
     ('/backstage/new/page/(.*)', BackstageNewPageHandler),
     ('/backstage/page/(.*)', BackstagePageHandler),
     ('/backstage/remove/page/(.*)', BackstageRemovePageHandler),
-    ('/backstage/new/section', BackstageNewSectionHandler),
-    ('/backstage/section/(.*)', BackstageSectionHandler),
+#    ('/backstage/new/section', BackstageNewSectionHandler),
+#    ('/backstage/section/(.*)', BackstageSectionHandler),
     ('/backstage/new/node/(.*)', BackstageNewNodeHandler),
     ('/backstage/node/(.*)', BackstageNodeHandler),
     ('/backstage/remove/reply/(.*)', BackstageRemoveReplyHandler),

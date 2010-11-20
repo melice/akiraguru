@@ -23,7 +23,7 @@ from google.appengine.ext.webapp import template
 
 from v2ex.babel import Member
 from v2ex.babel import Counter
-from v2ex.babel import Section
+#from v2ex.babel import Section
 from v2ex.babel import Node
 from v2ex.babel import Topic
 from v2ex.babel import Reply
@@ -95,7 +95,8 @@ class HomeHandler(webapp.RequestHandler):
             s = memcache.get('home_sections_neue')
             if (s == None):
                 s = ''
-                q = db.GqlQuery("SELECT * FROM Section ORDER BY created ASC")
+#                q = db.GqlQuery("SELECT * FROM Section ORDER BY created ASC")
+                q = Node.all().filter('caterogy =','')
                 if (q.count() > 0):
                     for section in q:
                         q2 = db.GqlQuery("SELECT * FROM Node WHERE section_num = :1 ORDER BY created ASC", section.num)
@@ -185,7 +186,7 @@ class HomeHandler(webapp.RequestHandler):
             if c is None:
                 c = ''
                 i = 0
-                categoriesdb = db.GqlQuery("SELECT * FROM Section")
+                categoriesdb = db.GqlQuery("SELECT * FROM Node where category = ''")
                 for cate in categoriesdb:
                     category = cate.name.strip()
                     i = i + 1
@@ -321,10 +322,7 @@ class SignupHandler(webapp.RequestHandler):
     def get(self):
         site = GetSite()
         member = False
-        chtml = captcha.displayhtml(
-            public_key = config.recaptcha_public_key,
-            use_ssl = False,
-            error = None)
+        chtml = ''
         browser = detect(self.request)
         template_values = {}
         template_values['site'] = site
@@ -425,29 +423,30 @@ class SignupHandler(webapp.RequestHandler):
         template_values['member_email_error'] = member_email_error
         template_values['member_email_error_message'] = member_email_error_messages[member_email_error]
         # Verification: reCAPTCHA
-        challenge = self.request.get('recaptcha_challenge_field')
-        response  = self.request.get('recaptcha_response_field')
-        remoteip  = os.environ['REMOTE_ADDR']
+#        challenge = self.request.get('recaptcha_challenge_field')
+#        response  = self.request.get('recaptcha_response_field')
+#        remoteip  = os.environ['REMOTE_ADDR']
+#
+#        cResponse = captcha.submit(
+#                         challenge,
+#                         response,
+#                         config.recaptcha_private_key,
+#                         remoteip)
+#        
+#        if cResponse.is_valid:
+#            logging.info('reCAPTCHA verification passed')
+#            template_values['recaptcha_error'] = 0
+#        else:
+#            errors = errors + 1
+#            error = cResponse.error_code
+#            chtml = captcha.displayhtml(
+#                public_key = config.recaptcha_public_key,
+#                use_ssl = False,
+#                error = cResponse.error_code)
+#            template_values['captchahtml'] = chtml
+#            template_values['recaptcha_error'] = 1
+#            template_values['recaptcha_error_message'] = '请重新输入 reCAPTCHA 验证码'
 
-        cResponse = captcha.submit(
-                         challenge,
-                         response,
-                         config.recaptcha_private_key,
-                         remoteip)
-
-        if cResponse.is_valid:
-            logging.info('reCAPTCHA verification passed')
-            template_values['recaptcha_error'] = 0
-        else:
-            errors = errors + 1
-            error = cResponse.error_code
-            chtml = captcha.displayhtml(
-                public_key = config.recaptcha_public_key,
-                use_ssl = False,
-                error = cResponse.error_code)
-            template_values['captchahtml'] = chtml
-            template_values['recaptcha_error'] = 1
-            template_values['recaptcha_error_message'] = '请重新输入 reCAPTCHA 验证码'
         template_values['errors'] = errors
         if (errors == 0):
             member = Member()
@@ -741,7 +740,8 @@ class NodeHandler(webapp.RequestHandler):
         template_values['previous'] = previous
         section = False
         if node:
-            section = GetKindByNum('Section', node.section_num)
+#            section = GetKindByNum('Section', node.section_num)
+            section = Node.all().filter('name =',node.category)
         template_values['section'] = section
         topics = False
         if node:

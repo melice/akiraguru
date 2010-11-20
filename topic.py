@@ -22,7 +22,7 @@ from google.appengine.ext.webapp import template
 
 from v2ex.babel import Member
 from v2ex.babel import Counter
-from v2ex.babel import Section
+#from v2ex.babel import Section
 from v2ex.babel import Node
 from v2ex.babel import Topic
 from v2ex.babel import Reply
@@ -67,7 +67,8 @@ class NewTopicHandler(webapp.RequestHandler):
                 output = template.render(path, template_values)
                 return self.response.out.write(output)
             template_values['node'] = node
-            section = GetKindByNum('Section', node.section_num)
+#            section = GetKindByNum('Section', node.section_num)
+            section = Node.all().filter('name =',node.category)
             template_values['section'] = section
             if site.use_topic_types:
                 types = site.topic_types.split("\n")
@@ -115,7 +116,8 @@ class NewTopicHandler(webapp.RequestHandler):
             template_values['node'] = node
             section = False
             if node:
-                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+#                q2 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+                q2 = Node.all().filter('name =',node.category)
                 if (q2.count() == 1):
                     section = q2[0]
             template_values['section'] = section
@@ -342,7 +344,8 @@ class TopicHandler(webapp.RequestHandler):
             section = False
             node = GetKindByNum('Node', topic.node_num)
             if (node):
-                section = GetKindByNum('Section', node.section_num)
+#                section = GetKindByNum('Section', node.section_num)
+                section = Node.all().filter('name =',node.category)
             template_values['node'] = node
             template_values['section'] = section
             replies = False
@@ -492,7 +495,8 @@ class TopicHandler(webapp.RequestHandler):
                 if topic:
                     q3 = db.GqlQuery("SELECT * FROM Node WHERE num = :1", topic.node_num)
                     node = q3[0]
-                    q4 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+#                    q4 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+                    q4 = Node.all().filter('name =',q3[0].caterogy)
                     section = q4[0]
                 reply.num = counter.value
                 reply.content = reply_content
@@ -560,7 +564,8 @@ class TopicHandler(webapp.RequestHandler):
                 if topic:
                     q2 = db.GqlQuery("SELECT * FROM Node WHERE num = :1", topic.node_num)
                     node = q2[0]
-                    q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+#                    q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+                    q3 = Node.all().filter('name =',q2[0].caterogy)
                     section = q3[0]
                 template_values['node'] = node
                 template_values['section'] = section
@@ -605,9 +610,11 @@ class TopicEditHandler(webapp.RequestHandler):
                     node = False
                     section = False
                     if topic:
-                        q2 = db.GqlQuery("SELECT * FROM Node WHERE num = :1", topic.node_num)
+#                        q2 = db.GqlQuery("SELECT * FROM Node WHERE num = :1", topic.node_num)
+                        q2 = Node.all().filter('name =',topic.node_name)
                         node = q2[0]
-                        q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+#                        q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+                        q3 = Node.all().filter('name =',q2[0].category)
                         section = q3[0]
                     template_values['node'] = node
                     template_values['section'] = section
@@ -651,7 +658,8 @@ class TopicEditHandler(webapp.RequestHandler):
                     template_values['node'] = node
                     section = False
                     if node:
-                        q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+#                        q3 = db.GqlQuery("SELECT * FROM Section WHERE num = :1", node.section_num)
+                        q3 = Node.all().filter('name =',q2[0].caterogy)
                         if (q3.count() == 1):
                             section = q3[0]
                     template_values['section'] = section

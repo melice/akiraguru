@@ -18,7 +18,7 @@ from google.appengine.ext.webapp import template
 
 from v2ex.babel import Member
 from v2ex.babel import Counter
-from v2ex.babel import Section
+#from v2ex.babel import Section
 from v2ex.babel import Node
 from v2ex.babel import Topic
 from v2ex.babel import Reply

@@ -101,16 +101,16 @@ class Counter(db.Model):
     created = db.DateTimeProperty(auto_now_add=True)
     last_increased = db.DateTimeProperty(auto_now=True)
     
-class Section(db.Model):
-    num = db.IntegerProperty(indexed=True)
-    name = db.StringProperty(required=False, indexed=True)
-    title = db.StringProperty(required=False, indexed=True)
-    title_alternative = db.StringProperty(required=False, indexed=True)
-    header = db.TextProperty(required=False)
-    footer = db.TextProperty(required=False)
-    nodes = db.IntegerProperty(default=0)
-    created = db.DateTimeProperty(auto_now_add=True)
-    last_modified = db.DateTimeProperty(auto_now=True)
+#class Section(db.Model):
+#    num = db.IntegerProperty(indexed=True)
+#    name = db.StringProperty(required=False, indexed=True)
+#    title = db.StringProperty(required=False, indexed=True)
+#    title_alternative = db.StringProperty(required=False, indexed=True)
+#    header = db.TextProperty(required=False)
+#    footer = db.TextProperty(required=False)
+#    nodes = db.IntegerProperty(default=0)
+#    created = db.DateTimeProperty(auto_now_add=True)
+#    last_modified = db.DateTimeProperty(auto_now=True)
     
 class Node(db.Model):
     num = db.IntegerProperty(indexed=True)
@@ -120,11 +120,12 @@ class Node(db.Model):
     title_alternative = db.StringProperty(required=False, indexed=True)
     header = db.TextProperty(required=False)
     footer = db.TextProperty(required=False)
-    sidebar = db.TextProperty(required=False)
+    sidebar = db.TextProperty(default='')
     category = db.StringProperty(required=False, indexed=True)
     topics = db.IntegerProperty(default=0)
     created = db.DateTimeProperty(auto_now_add=True)
     last_modified = db.DateTimeProperty(auto_now=True)
+    enabled = db.BooleanProperty(default=True)
     
 class Topic(db.Model):
     num = db.IntegerProperty(indexed=True)
